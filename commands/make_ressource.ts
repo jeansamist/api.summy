@@ -56,7 +56,7 @@ export default class MakeRessource extends BaseCommand {
   @flags.boolean({
     default: true,
     showNegatedVariantInHelp: true,
-    description: 'Generate repository',
+    description: 'Generate repository (requires model)',
   })
   declare repository: boolean
 
@@ -111,6 +111,7 @@ export default class MakeRessource extends BaseCommand {
     }
 
     const resourceName = this.resourceName
+    const shouldGenerateRepository = this.model && this.repository
 
     if (this.validator) {
       const success = await this.execSubCommand('make:validator', [resourceName])
@@ -132,7 +133,11 @@ export default class MakeRessource extends BaseCommand {
       if (!success) return
     }
 
-    if (this.repository) {
+    if (!this.model && this.repository) {
+      this.logger.warning('Skipping repository generation because model generation is disabled')
+    }
+
+    if (shouldGenerateRepository) {
       const success = await this.execSubCommand('make:repository', [resourceName])
       if (!success) return
     }
@@ -142,7 +147,7 @@ export default class MakeRessource extends BaseCommand {
       if (!success) return
     }
 
-    if (this.serviceLink && this.repository) {
+    if (this.serviceLink && shouldGenerateRepository) {
       await this.linkServiceRepository(resourceName)
     }
   }
