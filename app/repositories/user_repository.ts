@@ -42,7 +42,7 @@ export default class UserRepository {
     return this.model.create(data)
   }
 
-  async update(user: User, data: any): Promise<User> {
+  async update(user: User, data: Partial<ModelProps<User>>): Promise<User> {
     return user.merge(data).save()
   }
 

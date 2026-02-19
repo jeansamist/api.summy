@@ -21,11 +21,11 @@ router
     router
       .group(() => {
         router.post('sign-up', [AuthController, 'signUp'])
-        // router.post('sign-in', [AuthController, 'signIn'])
-        // router.post('verify-otp', [AuthController, 'verifyOtp'])
+        router.post('sign-in', [AuthController, 'signIn'])
+        router.post('verify-email', [AuthController, 'verifyEmail'])
+        router.post('forgot-password', [AuthController, 'forgotPassword'])
         // router.post('resend-otp', [AuthController, 'resendOtp'])
         // router.post('google', [AuthController, 'signInWithGoogle'])
-        // router.post('forgot-password', [AuthController, 'forgotPassword'])
         // router.post('reset-password', [AuthController, 'resetPassword'])
         // router.post('verify-email', [AuthController, 'verifyEmail'])
 
