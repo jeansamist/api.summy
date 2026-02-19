@@ -26,59 +26,67 @@ export default class MakeRessource extends BaseCommand {
   declare name: string | undefined
 
   @flags.boolean({
-    name: 'no-validator',
-    description: 'Skip validator generation',
+    default: true,
+    showNegatedVariantInHelp: true,
+    description: 'Generate validator',
   })
-  declare noValidator: boolean
+  declare validator: boolean
 
   @flags.boolean({
-    name: 'no-model',
-    description: 'Skip model generation',
+    default: true,
+    showNegatedVariantInHelp: true,
+    description: 'Generate model',
   })
-  declare noModel: boolean
+  declare model: boolean
 
   @flags.boolean({
-    name: 'no-controller',
-    description: 'Skip controller generation from model',
+    default: true,
+    showNegatedVariantInHelp: true,
+    description: 'Generate API controller',
   })
-  declare noController: boolean
+  declare controller: boolean
 
   @flags.boolean({
-    name: 'no-migration',
-    description: 'Skip migration generation from model',
+    default: true,
+    showNegatedVariantInHelp: true,
+    description: 'Generate migration',
   })
-  declare noMigration: boolean
+  declare migration: boolean
 
   @flags.boolean({
-    name: 'no-repository',
-    description: 'Skip repository generation',
+    default: true,
+    showNegatedVariantInHelp: true,
+    description: 'Generate repository',
   })
-  declare noRepository: boolean
+  declare repository: boolean
 
   @flags.boolean({
-    name: 'no-service',
-    description: 'Skip service generation',
+    default: true,
+    showNegatedVariantInHelp: true,
+    description: 'Generate service',
   })
-  declare noService: boolean
+  declare service: boolean
 
   @flags.boolean({
-    name: 'no-services',
-    description: 'Skip service generation',
+    default: true,
+    showNegatedVariantInHelp: true,
+    description: 'Generate service (plural alias)',
   })
-  declare noServices: boolean
+  declare services: boolean
 
   @flags.boolean({
-    name: 'no-service-link',
-    description: 'Skip repository injection inside the service constructor',
+    default: true,
+    showNegatedVariantInHelp: true,
+    description: 'Link repository injection inside service constructor',
   })
-  declare noServiceLink: boolean
+  declare serviceLink: boolean
 
   private get resourceName(): string {
     return this.name ? normalizeResourceName(this.name) : ''
   }
 
   private get shouldSkipService(): boolean {
-    return this.noService || this.noServices
+    return !this.service || !this.services
   }
 
   async interact() {
@@ -104,25 +112,27 @@ export default class MakeRessource extends BaseCommand {
 
     const resourceName = this.resourceName
 
-    if (!this.noValidator) {
+    if (this.validator) {
       const success = await this.execSubCommand('make:validator', [resourceName])
       if (!success) return
     }
 
-    if (!this.noModel) {
-      const modelArgs = [resourceName]
-      if (!this.noController) {
-        modelArgs.push('--controller')
-      }
-      if (!this.noMigration) {
-        modelArgs.push('--migration')
-      }
-
-      const success = await this.execSubCommand('make:model', modelArgs)
+    if (this.model) {
+      const success = await this.execSubCommand('make:model', [resourceName])
       if (!success) return
     }
 
-    if (!this.noRepository) {
+    if (this.controller) {
+      const success = await this.execSubCommand('make:controller', [resourceName, '--api'])
+      if (!success) return
+    }
+
+    if (this.migration) {
+      const success = await this.execSubCommand('make:migration', [resourceName, '--create'])
+      if (!success) return
+    }
+
+    if (this.repository) {
       const success = await this.execSubCommand('make:repository', [resourceName])
       if (!success) return
     }
@@ -132,7 +142,7 @@ export default class MakeRessource extends BaseCommand {
       if (!success) return
     }
 
-    if (!this.noServiceLink) {
+    if (this.serviceLink && this.repository) {
       await this.linkServiceRepository(resourceName)
     }
   }
