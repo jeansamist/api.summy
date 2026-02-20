@@ -1,2 +1,7 @@
+ignoredBuiltDependencies:
+  - puppeteer
+
 onlyBuiltDependencies:
   - '@swc/core'
+  - msgpackr-extract
+  - puppeteer
