@@ -65,6 +65,8 @@
     "@react-email/components": "^1.0.8",
     "@react-email/render": "^2.0.4",
     "@vinejs/vine": "^3.0.1",
+    "bullmq": "^5.69.3",
+    "cron": "^4.4.0",
     "luxon": "^3.7.2",
     "pg": "^8.18.0",
     "react": "^19.2.4",

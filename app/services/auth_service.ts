@@ -9,14 +9,20 @@ import { Authenticator } from '@adonisjs/auth'
 import { Authenticators } from '@adonisjs/auth/types'
 import { inject } from '@adonisjs/core'
 import { cuid } from '@adonisjs/core/helpers'
+import { Logger } from '@adonisjs/core/logger'
 import mail from '@adonisjs/mail/services/main'
 import { DateTime } from 'luxon'
 import { randomInt } from 'node:crypto'
+import CronManager from '../managers/crons_manager.js'
 
 @inject()
 export class AuthService {
   // Your code here
-  constructor(protected readonly userRepository: UserRepository) {}
+  constructor(
+    protected readonly userRepository: UserRepository,
+    protected readonly cronManager: CronManager,
+    protected readonly logger: Logger
+  ) {}
 
   generateVerificationCode() {
     return randomInt(100000, 1000000).toString()
@@ -36,7 +42,7 @@ export class AuthService {
     } satisfies Omit<ModelProps<User>, 'firstName' | 'lastName' | 'email' | 'password'>
     const user = await this.userRepository.create({ ...data, ...restOfData })
 
-    await this.sendEmailVerificationCodeNotification(user)
+    this.sendEmailVerificationCodeNotification(user)
     return user
   }
 
@@ -60,7 +66,7 @@ export class AuthService {
     const resetPasswordToken = this.generateResetPasswordToken()
     const resetPasswordTokenExpiresAt = DateTime.now().plus({ hours: 1 })
 
-    await this.sendPasswordResetEmail(
+    this.sendPasswordResetEmail(
       await this.userRepository.update(user, {
         resetPasswordToken,
         resetPasswordTokenExpiresAt,
@@ -68,25 +74,72 @@ export class AuthService {
     )
   }
 
+  async resetPassword(data: { email: string; resetPasswordToken: string; newPassword: string }) {
+    const user = await this.userRepository.findByEmailAndResetPasswordToken(
+      data.email,
+      data.resetPasswordToken
+    )
+    if (!user) return false
+    if (user.resetPasswordTokenExpiresAt && user.resetPasswordTokenExpiresAt < DateTime.now()) {
+      return false
+    }
+    await this.userRepository.update(user, {
+      password: data.newPassword,
+    })
+    return true
+  }
+
+  async deleteAccount(user: User) {
+    return this.userRepository.delete(user)
+  }
+
+  async updateProfile(user: User, payload: Partial<ModelProps<User>>) {
+    return this.userRepository.update(user, payload)
+  }
+
   generateResetPasswordToken() {
     return cuid()
   }
 
-  async sendPasswordResetEmail(user: User) {
+  sendPasswordResetEmail(user: User) {
     const resetPasswordLink =
-      env.get('FRONTEND_APP_URL') + '/auth/reset-password?resetCode=' + user.resetPasswordToken
+      env.get('FRONTEND_APP_URL') +
+      '/auth/reset-password?resetPasswordToken=' +
+      user.resetPasswordToken
     const notification = new PasswordResetNotification(user, resetPasswordLink)
-    await mail.send(notification)
+
+    this.cronManager.addQueueJob(
+      'emails',
+      async () => {
+        this.logger.info('Send reset password email')
+        await mail.send(notification)
+      },
+      { retries: 2, retryDelayMs: 1000 }
+    )
   }
 
-  async sendEmailVerificationCodeNotification(user: User) {
+  sendEmailVerificationCodeNotification(user: User) {
     const notification = new EmailVerificationCodeNotification(user)
-    await mail.send(notification)
+    this.cronManager.addQueueJob(
+      'emails',
+      async () => {
+        this.logger.info('Send email verification code email')
+        await mail.send(notification)
+      },
+      { retries: 2, retryDelayMs: 1000 }
+    )
   }
 
-  async sendWelcomeNotification(user: User) {
+  sendWelcomeNotification(user: User) {
     const notification = new WelcomeNotification(user)
-    await mail.send(notification)
+    this.cronManager.addQueueJob(
+      'emails',
+      async () => {
+        this.logger.info('Send welcome email')
+        await mail.send(notification)
+      },
+      { retries: 2, retryDelayMs: 1000 }
+    )
   }
 
   /**
@@ -109,10 +162,6 @@ export class AuthService {
       emailVerificationCode
     )
     if (!user) return false
-
-    if (user.emailVerificationCode !== emailVerificationCode) {
-      return false
-    }
     if (
       user.emailVerificationCodeExpiresAt &&
       user.emailVerificationCodeExpiresAt < DateTime.now()
@@ -124,7 +173,7 @@ export class AuthService {
       emailVerifiedAt: DateTime.now(),
     })
     await this.wipeEmailVerificationCode(user)
-    await this.sendWelcomeNotification(user)
+    this.sendWelcomeNotification(user)
     return user
   }
 
