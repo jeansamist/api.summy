@@ -14,6 +14,5 @@ export const updateUserValidator = vine.compile(
     avatar: vine.string().optional(),
     firstName: vine.string().optional(),
     lastName: vine.string().optional(),
-    email: vine.string().optional(),
   })
 )
