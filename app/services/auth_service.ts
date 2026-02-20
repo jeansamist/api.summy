@@ -1,5 +1,7 @@
 import EmailVerificationCodeNotification from '#mails/email_verification_code_notification'
+import LoginAlertNotification from '#mails/login_alert_notification'
 import PasswordResetNotification from '#mails/password_reset_notification'
+import PasswordResetAlertNotification from '#mails/password_reset_alert_notification'
 import WelcomeNotification from '#mails/welcome_notification'
 import User from '#models/user'
 import UserRepository from '#repositories/user_repository'
@@ -54,6 +56,7 @@ export class AuthService {
         'Please verify your email address before signing in. Check your email for the verification code.'
       )
     }
+    this.sendLoginAlertNotification(user)
     return user
   }
 
@@ -86,6 +89,8 @@ export class AuthService {
     await this.userRepository.update(user, {
       password: data.newPassword,
     })
+    await this.wipeResetPasswordToken(user)
+    this.sendPasswordResetAlertNotification(user)
     return true
   }
 
@@ -118,6 +123,21 @@ export class AuthService {
     )
   }
 
+  sendPasswordResetAlertNotification(user: User) {
+    const notification = new PasswordResetAlertNotification(
+      user,
+      `${DateTime.now().toUTC().toFormat('yyyy-LL-dd HH:mm:ss')} UTC`
+    )
+    this.cronManager.addQueueJob(
+      'emails',
+      async () => {
+        this.logger.info('Send password reset alert email')
+        await mail.send(notification)
+      },
+      { retries: 2, retryDelayMs: 1000 }
+    )
+  }
+
   sendEmailVerificationCodeNotification(user: User) {
     const notification = new EmailVerificationCodeNotification(user)
     this.cronManager.addQueueJob(
@@ -136,6 +156,21 @@ export class AuthService {
       'emails',
       async () => {
         this.logger.info('Send welcome email')
+        await mail.send(notification)
+      },
+      { retries: 2, retryDelayMs: 1000 }
+    )
+  }
+
+  sendLoginAlertNotification(user: User) {
+    const notification = new LoginAlertNotification(
+      user,
+      `${DateTime.now().toUTC().toFormat('yyyy-LL-dd HH:mm:ss')} UTC`
+    )
+    this.cronManager.addQueueJob(
+      'emails',
+      async () => {
+        this.logger.info('Send login alert email')
         await mail.send(notification)
       },
       { retries: 2, retryDelayMs: 1000 }
