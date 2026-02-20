@@ -11,6 +11,7 @@ import router from '@adonisjs/core/services/router'
 import { middleware } from './kernel.js'
 
 const AuthController = () => import('#controllers/auth_controller')
+const AgentsController = () => import('#controllers/agents_controller')
 router.get('/', async () => {
   return {
     hello: 'world',
@@ -36,5 +37,11 @@ router
         router.delete('delete-account', [AuthController, 'deleteAccount']).use([middleware.auth()])
       })
       .prefix('auth')
+
+    router.get('agents', [AgentsController, 'index']).use([middleware.auth()])
+    router.post('agents', [AgentsController, 'store']).use([middleware.auth()])
+    router.get('agents/:id', [AgentsController, 'show']).use([middleware.auth()])
+    router.put('agents/:id', [AgentsController, 'update']).use([middleware.auth()])
+    router.delete('agents/:id', [AgentsController, 'destroy']).use([middleware.auth()])
   })
   .prefix('/api')

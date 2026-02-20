@@ -1,3 +1,6 @@
+import type { LucidModel } from '@adonisjs/lucid/types/model'
+import type { ModelRelations } from '@adonisjs/lucid/types/relations'
+
 // Generic utility to extract only the properties (exclude methods) of a class
 export type ModelProps<T> = {
   [K in keyof T as K extends string
@@ -7,6 +10,8 @@ export type ModelProps<T> = {
         ? never
         : T[K] extends Function // omit methods
           ? never
-          : K
+          : NonNullable<T[K]> extends ModelRelations<LucidModel, LucidModel> // omit lucid relations
+            ? never
+            : K
     : never]: T[K]
 }
