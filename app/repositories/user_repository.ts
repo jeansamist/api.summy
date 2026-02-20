@@ -13,6 +13,9 @@ export default class UserRepository {
   async findByEmailVerified(email: string): Promise<User | null> {
     return this.model.query().where('email', email).where('email_verified', true).first()
   }
+  async findByEmailNotVerified(email: string): Promise<User | null> {
+    return this.model.query().where('email', email).where('email_verified', false).first()
+  }
 
   async findByEmailAndResetPasswordToken(
     email: string,

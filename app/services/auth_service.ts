@@ -1,7 +1,7 @@
 import EmailVerificationCodeNotification from '#mails/email_verification_code_notification'
 import LoginAlertNotification from '#mails/login_alert_notification'
-import PasswordResetNotification from '#mails/password_reset_notification'
 import PasswordResetAlertNotification from '#mails/password_reset_alert_notification'
+import PasswordResetNotification from '#mails/password_reset_notification'
 import WelcomeNotification from '#mails/welcome_notification'
 import User from '#models/user'
 import UserRepository from '#repositories/user_repository'
@@ -42,8 +42,16 @@ export class AuthService {
       resetPasswordToken: null,
       resetPasswordTokenExpiresAt: null,
     } satisfies Omit<ModelProps<User>, 'firstName' | 'lastName' | 'email' | 'password'>
+    const existingUser = await this.userRepository.findByEmail(data.email)
+    if (existingUser) {
+      if (existingUser.emailVerified) {
+        throw new Error('Email has already been taken')
+      }
+      // Update the unverified user
+      await this.userRepository.update(existingUser, { ...data, ...restOfData })
+      return existingUser
+    }
     const user = await this.userRepository.create({ ...data, ...restOfData })
-
     this.sendEmailVerificationCodeNotification(user)
     return user
   }
