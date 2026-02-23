@@ -2,6 +2,7 @@ ignoredBuiltDependencies:
   - puppeteer
 
 onlyBuiltDependencies:
+  - '@parcel/watcher'
   - '@swc/core'
   - msgpackr-extract
   - puppeteer

@@ -1,6 +1,24 @@
 import { defineConfig } from '@adonisjs/core/app'
 
 export default defineConfig({
+  directories: {
+    config: 'src/config',
+    commands: 'src/presentation/commands',
+    providers: 'src/providers',
+    migrations: 'src/infrastructure/database/migrations',
+    models: 'src/infrastructure/database/models',
+    services: 'src/domain/use_cases',
+    exceptions: 'src/presentation/rest/exceptions',
+    mails: 'src/infrastructure/services/mails',
+    middleware: 'src/presentation/rest/middleware',
+    validators: 'src/presentation/rest/validators',
+    httpControllers: 'src/presentation/rest/controllers',
+    events: 'src/domain/events',
+    listeners: 'src/domain/events',
+    start: 'src/start',
+    tests: 'src/tests',
+  },
+
   /*
   |--------------------------------------------------------------------------
   | Experimental flags
@@ -25,7 +43,11 @@ export default defineConfig({
   | will be scanned automatically from the "./commands" directory.
   |
   */
-  commands: [() => import('@adonisjs/core/commands'), () => import('@adonisjs/lucid/commands'), () => import('@adonisjs/mail/commands')],
+  commands: [
+    () => import('@adonisjs/core/commands'),
+    () => import('@adonisjs/lucid/commands'),
+    () => import('@adonisjs/mail/commands'),
+  ],
 
   /*
   |--------------------------------------------------------------------------
@@ -47,7 +69,8 @@ export default defineConfig({
     () => import('@adonisjs/cors/cors_provider'),
     () => import('@adonisjs/lucid/database_provider'),
     () => import('@adonisjs/auth/auth_provider'),
-    () => import('@adonisjs/mail/mail_provider')
+    () => import('@adonisjs/mail/mail_provider'),
+    () => import('#providers/clean_architecture_provider'),
   ],
 
   /*
@@ -72,12 +95,12 @@ export default defineConfig({
   tests: {
     suites: [
       {
-        files: ['tests/unit/**/*.spec(.ts|.js)'],
+        files: ['src/tests/unit/**/*.spec(.ts|.js)'],
         name: 'unit',
         timeout: 2000,
       },
       {
-        files: ['tests/functional/**/*.spec(.ts|.js)'],
+        files: ['src/tests/functional/**/*.spec(.ts|.js)'],
         name: 'functional',
         timeout: 30000,
       },

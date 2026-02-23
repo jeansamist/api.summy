@@ -14,25 +14,30 @@
     "typecheck": "tsc --noEmit"
   },
   "imports": {
-    "#controllers/*": "./app/controllers/*.js",
-    "#exceptions/*": "./app/exceptions/*.js",
-    "#models/*": "./app/models/*.js",
-    "#mails/*": "./app/mails/*.js",
-    "#services/*": "./app/services/*.js",
-    "#listeners/*": "./app/listeners/*.js",
-    "#events/*": "./app/events/*.js",
-    "#middleware/*": "./app/middleware/*.js",
-    "#validators/*": "./app/validators/*.js",
-    "#providers/*": "./providers/*.js",
-    "#policies/*": "./app/policies/*.js",
-    "#abilities/*": "./app/abilities/*.js",
-    "#database/*": "./database/*.js",
-    "#start/*": "./start/*.js",
-    "#tests/*": "./tests/*.js",
-    "#config/*": "./config/*.js",
-    "#utils/*": "./utils/*.js",
-    "#repositories/*": "./app/repositories/*.js",
-    "#mail_templates/*": "./resources/mail_templates/*.js"
+    "#domain/*": "./src/domain/*.js",
+    "#infrastructure/*": "./src/infrastructure/*.js",
+    "#presentation/*": "./src/presentation/*.js",
+    "#shared/*": "./src/shared/*.js",
+    "#controllers/*": "./src/presentation/rest/controllers/*.js",
+    "#exceptions/*": "./src/presentation/rest/exceptions/*.js",
+    "#models/*": "./src/infrastructure/database/models/*.js",
+    "#mails/*": "./src/infrastructure/services/mails/*.js",
+    "#services/*": "./src/domain/use_cases/*.js",
+    "#listeners/*": "./src/domain/events/*.js",
+    "#events/*": "./src/domain/events/*.js",
+    "#middleware/*": "./src/presentation/rest/middleware/*.js",
+    "#validators/*": "./src/presentation/rest/validators/*.js",
+    "#providers/*": "./src/providers/*.js",
+    "#policies/*": "./src/presentation/rest/policies/*.js",
+    "#abilities/*": "./src/domain/services/abilities/*.js",
+    "#database/*": "./src/infrastructure/database/*.js",
+    "#start/*": "./src/start/*.js",
+    "#tests/*": "./src/tests/*.js",
+    "#config/*": "./src/config/*.js",
+    "#utils/*": "./src/shared/utils/*.js",
+    "#repositories/*": "./src/infrastructure/repositories/*.js",
+    "#mail_templates/*": "./src/infrastructure/templates/mails/*.js",
+    "#queues/*": "./src/infrastructure/queues/*.js"
   },
   "devDependencies": {
     "@adonisjs/assembler": "^7.8.2",
@@ -73,8 +78,8 @@
   },
   "hotHook": {
     "boundaries": [
-      "./app/controllers/**/*.ts",
-      "./app/middleware/*.ts"
+      "./src/presentation/rest/controllers/**/*.ts",
+      "./src/presentation/rest/middleware/**/*.ts"
     ]
   },
   "prettier": "@adonisjs/prettier-config"
